@@ -319,14 +319,30 @@ function Ensure-ServerSurfaces {
     }
 }
 
-function Disable-ServerChecksum {
-    param([string]$AcDir)
-    # Ana content\cars klasorune dokunmadan yalnizca server\content\cars icindeki data.acd dosyalarini temizle
+function Sync-ServerCarData {
+    param(
+        [string]$AcDir,
+        [string[]]$Models
+    )
+    $mainCarsDir = Join-Path $AcDir "content\cars"
     $serverCarsDir = Join-Path $AcDir "server\content\cars"
-    if (Test-Path $serverCarsDir) {
-        $acdFiles = Get-ChildItem -Path $serverCarsDir -Filter "data.acd" -Recurse -File -ErrorAction SilentlyContinue
-        foreach ($f in $acdFiles) {
-            Remove-Item -LiteralPath $f.FullName -Force -ErrorAction SilentlyContinue
+    foreach ($carId in $Models) {
+        $srcCar = Join-Path $mainCarsDir $carId
+        $dstCar = Join-Path $serverCarsDir $carId
+        if (-not (Test-Path $dstCar)) {
+            New-Item -Path $dstCar -ItemType Directory -Force | Out-Null
+        }
+        $srcAcd = Join-Path $srcCar "data.acd"
+        if (Test-Path $srcAcd) {
+            Copy-Item -Path $srcAcd -Destination (Join-Path $dstCar "data.acd") -Force -ErrorAction SilentlyContinue
+        }
+        $srcDataDir = Join-Path $srcCar "data"
+        if (Test-Path $srcDataDir) {
+            $dstDataDir = Join-Path $dstCar "data"
+            if (-not (Test-Path $dstDataDir)) {
+                New-Item -Path $dstDataDir -ItemType Directory -Force | Out-Null
+            }
+            Copy-Item -Path (Join-Path $srcDataDir "*") -Destination $dstDataDir -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
 }
@@ -616,15 +632,16 @@ Write-Host "[5/5] Sunucu guvenlik, surfaces.ini ve yapilandirma ayarlari yapiliy
 Ensure-ServerSurfaces -AcDir $acDir -Monza $monza
 Write-Host "[OK] surfaces.ini cokme korumasi uygulandi." -ForegroundColor Green
 
-Disable-ServerChecksum -AcDir $acDir
-Write-Host "[OK] Checksum (MD5) kontrolu temizlendi." -ForegroundColor Green
-
 Ensure-FirewallRules
 Write-Host "[OK] Windows Firewall port izinleri (9600, 8081) islendi." -ForegroundColor Green
 
 $cfgDir = Join-Path $serverDir "cfg"
 if (-not (Test-Path $cfgDir)) {
     New-Item -Path $cfgDir -ItemType Directory -Force | Out-Null
+}
+$rootCfgDir = Join-Path $acDir "cfg"
+if (-not (Test-Path $rootCfgDir)) {
+    New-Item -Path $rootCfgDir -ItemType Directory -Force | Out-Null
 }
 
 # Her aractan 4 kopya, toplam maksimum 24 slot
@@ -656,8 +673,13 @@ foreach ($car in $selectedCars) {
 }
 
 $carsLine = [string]::Join(";", $addedModels.ToArray())
+Sync-ServerCarData -AcDir $acDir -Models $addedModels.ToArray()
+Write-Host "[OK] Arac veri dosyalari (data.acd/data) senkronize edildi." -ForegroundColor Green
+
 $entryPath = Join-Path $cfgDir "entry_list.ini"
+$rootEntryPath = Join-Path $rootCfgDir "entry_list.ini"
 [System.IO.File]::WriteAllText($entryPath, $entrySb.ToString(), (New-Object System.Text.UTF8Encoding($false)))
+[System.IO.File]::WriteAllText($rootEntryPath, $entrySb.ToString(), (New-Object System.Text.UTF8Encoding($false)))
 
 $serverCfg = @"
 [SERVER]
@@ -728,7 +750,9 @@ WIND_VARIATION_DIRECTION=0
 "@
 
 $cfgPath = Join-Path $cfgDir "server_cfg.ini"
+$rootCfgPath = Join-Path $rootCfgDir "server_cfg.ini"
 [System.IO.File]::WriteAllText($cfgPath, $serverCfg, (New-Object System.Text.UTF8Encoding($false)))
+[System.IO.File]::WriteAllText($rootCfgPath, $serverCfg, (New-Object System.Text.UTF8Encoding($false)))
 
 # Onceki acServer calisiyorsa kapat
 Get-Process -Name "acServer" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
@@ -764,5 +788,5 @@ Write-Host "     Oyun bitene kadar bu siyah pencereyi KAPATMAYIN." -ForegroundCo
 Write-Host "============================================================" -ForegroundColor Green
 Write-Host ""
 
-$proc = Start-Process -FilePath $serverExe -ArgumentList "-c cfg/server_cfg.ini -e cfg/entry_list.ini" -WorkingDirectory $serverDir -NoNewWindow -PassThru -Wait
+$proc = Start-Process -FilePath $serverExe -ArgumentList "-c server/cfg/server_cfg.ini -e server/cfg/entry_list.ini" -WorkingDirectory $acDir -NoNewWindow -PassThru -Wait
 exit $proc.ExitCode

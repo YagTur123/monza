@@ -332,6 +332,24 @@ function Sync-ServerCarData {
         if (-not (Test-Path $dstCar)) {
             New-Item -Path $dstCar -ItemType Directory -Force | Out-Null
         }
+
+        # DLC / parent kilidi varsa ui_car.json icinden temizle
+        $srcUiJson = Join-Path $srcCar "ui\ui_car.json"
+        if (Test-Path $srcUiJson) {
+            try {
+                $rawJson = [System.IO.File]::ReadAllText($srcUiJson, [System.Text.Encoding]::UTF8)
+                if ($rawJson -match '"parent"\s*:') {
+                    $cleaned = $rawJson -replace ',\s*"parent"\s*:\s*"[^"]*"', '' -replace '"parent"\s*:\s*"[^"]*"\s*,?', ''
+                    [System.IO.File]::WriteAllText($srcUiJson, $cleaned, (New-Object System.Text.UTF8Encoding($false)))
+                }
+                $dstUiDir = Join-Path $dstCar "ui"
+                if (-not (Test-Path $dstUiDir)) {
+                    New-Item -Path $dstUiDir -ItemType Directory -Force | Out-Null
+                }
+                Copy-Item -Path $srcUiJson -Destination (Join-Path $dstUiDir "ui_car.json") -Force -ErrorAction SilentlyContinue
+            } catch {}
+        }
+
         $srcAcd = Join-Path $srcCar "data.acd"
         if (Test-Path $srcAcd) {
             Copy-Item -Path $srcAcd -Destination (Join-Path $dstCar "data.acd") -Force -ErrorAction SilentlyContinue
@@ -364,28 +382,21 @@ function Ensure-FirewallRules {
 
 function Get-CarCatalog {
     param([string]$CarsRoot)
-    $noDlcCars = New-Object System.Collections.Generic.List[hashtable]
-    $allCars = New-Object System.Collections.Generic.List[hashtable]
+    $cars296 = New-Object System.Collections.Generic.List[hashtable]
+    $otherCars = New-Object System.Collections.Generic.List[hashtable]
 
     $dirs = Get-ChildItem -Path $CarsRoot -Directory -ErrorAction SilentlyContinue | Sort-Object Name
     foreach ($d in $dirs) {
         $carId = $d.Name
+        if ($carId -imatch "^traffic_") { continue }
+
         $carName = $carId
-        $exclude = $false
-
-        if ($carId -imatch "^ks_") { $exclude = $true }
-        if ($carId -imatch "^traffic_") { $exclude = $true }
-        if ($carId -imatch "992|gt3") { $exclude = $true }
-
         $uiCar = Join-Path $d.FullName "ui\ui_car.json"
         if (Test-Path $uiCar) {
             try {
                 $raw = Get-Content -Path $uiCar -Raw -Encoding UTF8
                 if ($raw -imatch '"name"\s*:\s*"([^"]+)"') {
                     $carName = $matches[1]
-                }
-                if ($carName -imatch "992|gt3" -or $raw -imatch '"parent"\s*:\s*"ks_') {
-                    $exclude = $true
                 }
             } catch {}
         }
@@ -397,18 +408,27 @@ function Get-CarCatalog {
             if ($firstSkin) { $skinName = $firstSkin.Name }
         }
 
+        $is296 = ($carId -imatch "296") -or ($carName -imatch "296")
         $item = @{
-            Id   = $carId
-            Name = $carName
-            Skin = $skinName
+            Id    = $carId
+            Name  = $carName
+            Skin  = $skinName
+            Is296 = $is296
         }
-        $allCars.Add($item)
-        if (-not $exclude) { $noDlcCars.Add($item) }
+        if ($is296) {
+            $cars296.Add($item)
+        } else {
+            $otherCars.Add($item)
+        }
     }
 
+    $ordered = New-Object System.Collections.Generic.List[hashtable]
+    foreach ($c in $cars296) { $ordered.Add($c) }
+    foreach ($c in $otherCars) { $ordered.Add($c) }
+
     return @{
-        NoDlc = $noDlcCars
-        All   = $allCars
+        Ordered = $ordered
+        Cars296 = $cars296
     }
 }
 
@@ -532,20 +552,80 @@ $layoutDisplay = if ([string]::IsNullOrWhiteSpace($monza.Layout)) { "(Varsayilan
 Write-Host "[OK] Monza pisti hazir: $($monza.TrackId) $layoutDisplay" -ForegroundColor Green
 Write-Host ""
 
-# 3. DLC'siz 2 arac otomatik secimi (soru sormadan)
-Write-Host "[3/5] DLC'siz araclar seciliyor (992/GT3/ks_ haric)..." -ForegroundColor Cyan
+# 3. Arac secim ekrani (Varsayilan: Sadece tek arac 296 GT3)
+Write-Host "[3/5] Yuklu araclar listeleniyor..." -ForegroundColor Cyan
 $carsRoot = Join-Path $acDir "content\cars"
-$catalog = Get-CarCatalog -CarsRoot $carsRoot
+$selectedCars = $null
 
-if ($catalog.All.Count -eq 0) {
-    Write-Host "[HATA] content\cars klasorunde hic arac bulunamadi!" -ForegroundColor Red
-    exit 1
+while (-not $selectedCars) {
+    $catalog = Get-CarCatalog -CarsRoot $carsRoot
+    $ordered = $catalog.Ordered
+
+    if ($ordered.Count -eq 0) {
+        Write-Host "[HATA] content\cars klasorunde hic arac bulunamadi!" -ForegroundColor Red
+        exit 1
+    }
+
+    Write-Host ""
+    Write-Host "Bilgisayardaki Araclar (numara yazip ENTER'a basin, birden fazla icin ornek: 1,4):" -ForegroundColor White
+    for ($idx = 0; $idx -lt $ordered.Count; $idx++) {
+        $num = $idx + 1
+        $c = $ordered[$idx]
+        if ($c.Is296) {
+            Write-Host "  [$num] $($c.Name) [$($c.Id)]  <-- 296 GT3 (VARSAYILAN)" -ForegroundColor Green
+        } else {
+            Write-Host "  [$num] $($c.Name) [$($c.Id)]" -ForegroundColor Gray
+        }
+    }
+    Write-Host ""
+
+    if ($catalog.Cars296.Count -gt 0) {
+        $defCar = $catalog.Cars296[0]
+        Write-Host "Varsayilan Tek Arac: $($defCar.Name) [ENTER'a basarsan SADECE bu tek aracla acilir]" -ForegroundColor Cyan
+        $pick = Read-Host "Seciminiz (Varsayilan ENTER = 1, Yenile = R)"
+        if ($pick -eq "r" -or $pick -eq "R") { continue }
+        if ([string]::IsNullOrWhiteSpace($pick)) {
+            $selectedCars = @($defCar)
+            break
+        }
+    } else {
+        Write-Host "[UYARI] Bilgisayarda henuz Ferrari 296 GT3 kurulmamis!" -ForegroundColor Yellow
+        Write-Host "Web sayfasindan Ferrari 296 GT3'u indirip Content Manager'a kurduktan sonra R yazip yenileyebilir" -ForegroundColor Gray
+        Write-Host "veya yukaridaki listeden istediginiz aracin numarasini yazabilirsiniz." -ForegroundColor Gray
+        Write-Host ""
+        $pick = Read-Host "Arac numarasi girin (ornek: 1) veya Yenile [R]"
+        if ($pick -eq "r" -or $pick -eq "R") { continue }
+        if ([string]::IsNullOrWhiteSpace($pick)) {
+            Write-Host "[HATA] Lutfen listeden bir arac numarasi yazin veya 296 GT3 kurup R ile yenileyin." -ForegroundColor Red
+            continue
+        }
+    }
+
+    $pickedList = New-Object System.Collections.Generic.List[hashtable]
+    $tokens = $pick -split '[,\s;]+'
+    foreach ($tok in $tokens) {
+        $n = 0
+        if ([int]::TryParse($tok.Trim(), [ref]$n)) {
+            if ($n -ge 1 -and $n -le $ordered.Count) {
+                $cand = $ordered[$n - 1]
+                $already = $false
+                foreach ($p in $pickedList) {
+                    if ($p.Id -eq $cand.Id) { $already = $true; break }
+                }
+                if (-not $already) { $pickedList.Add($cand) }
+            }
+        }
+    }
+
+    if ($pickedList.Count -gt 0) {
+        $selectedCars = $pickedList.ToArray()
+    } else {
+        Write-Host "[HATA] Gecersiz numara girdiniz. Lutfen listedeki numaralardan birini yazin." -ForegroundColor Red
+    }
 }
 
-$pool = if ($catalog.NoDlc.Count -gt 0) { $catalog.NoDlc } else { $catalog.All }
-$selectedCars = @($pool | Select-Object -First 2)
-
-Write-Host "[OK] Secilen 2 arac (DLC'siz):" -ForegroundColor Green
+Write-Host ""
+Write-Host "[OK] Secilen arac(lar):" -ForegroundColor Green
 foreach ($sc in $selectedCars) {
     Write-Host "    * $($sc.Name) [$($sc.Id)]" -ForegroundColor White
 }
@@ -586,8 +666,9 @@ if (-not (Test-Path $rootCfgDir)) {
     New-Item -Path $rootCfgDir -ItemType Directory -Force | Out-Null
 }
 
-# Her aractan 4 kopya, toplam maksimum 24 slot
+# Tek arac secildiyse 8 slot, birden fazla secildiyse her aractan 4 kopya (maksimum 24 slot)
 $maxSlots = 24
+$copiesPerCar = if ($selectedCars.Count -eq 1) { 8 } else { 4 }
 $entrySb = New-Object System.Text.StringBuilder
 $addedModels = New-Object System.Collections.Generic.List[string]
 $slot = 0
@@ -595,7 +676,7 @@ $slot = 0
 foreach ($car in $selectedCars) {
     if ($slot -ge $maxSlots) { break }
     $copies = 0
-    while ($copies -lt 4 -and $slot -lt $maxSlots) {
+    while ($copies -lt $copiesPerCar -and $slot -lt $maxSlots) {
         [void]$entrySb.AppendLine("[CAR_$slot]")
         [void]$entrySb.AppendLine("MODEL=$($car.Id)")
         [void]$entrySb.AppendLine("SKIN=$($car.Skin)")

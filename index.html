@@ -421,6 +421,39 @@
       background: var(--red-hover);
     }
 
+    .btn-blue {
+      background: var(--blue);
+      color: #ffffff;
+    }
+    .btn-blue:hover {
+      background: var(--blue-hover);
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #ffffff;
+    }
+    .btn-green:hover {
+      background: var(--green-hover);
+    }
+
+    .card-live {
+      border-color: #26364f;
+      border-top: 3px solid var(--blue);
+    }
+
+    .card-tag-live {
+      color: #86efac;
+    }
+
+    .server-sub {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border);
+      font-size: 0.79rem;
+      color: var(--muted);
+    }
+
     .btn-outline {
       background: var(--surface-2);
       color: var(--text);
@@ -732,10 +765,74 @@
       </div>
     </section>
 
-    <section aria-label="B Planı: Kunos GT3 ve Açık Online Sunucular">
-      <h2 class="section-title">3. B Planı: Kunos GT3 Araçları &amp; Açık Online Monza Sunucuları (LAN Engellenirse)</h2>
-      <p class="section-desc">Sim kafede Firewall şifresi veya kafe kilidi yüzünden kendi LAN sunucunuza bağlanamazsanız, aşağıdaki adımlarla hazır açık ücretsiz Monza sunucularına girebilirsiniz.</p>
+    <section aria-label="B Planı: Canlı Hazır Sunucular ve Kunos GT3">
+      <h2 class="section-title">3. B Planı: Hazır Açık Monza &amp; GT3 Sunucuları (LAN Kuramazsanız)</h2>
+      <p class="section-desc">Sim kafede kendi sunucunuzu kuramazsanız aşağıdaki 7/24 açık şifresiz sunuculardan birini seçin, gereken araçları indirip <strong>Content Manager ile Odaya Katıl</strong> butonuna basın.</p>
       <div class="grid">
+        <article class="card card-live">
+          <div>
+            <div class="card-tag card-tag-live">CANLI 7/24 AÇIK // ŞİFRESİZ // 26 KİŞİLİK // PİST: MONZA</div>
+            <h3>Hazır Sunucu 1: Krreritas.com [ Racing 2 | Monza | GT2/GT3 ]</h3>
+            <p>
+              <strong>Sunucu:</strong> <code>141.95.149.233:9602</code><br />
+              <strong>Gerekli Araçlar:</strong> <code>bmw_m3_gt2</code>, <code>bmw_z4_gt3</code>, <code>ferrari_458_gt2</code>, <code>mclaren_mp412c_gt3</code>, <code>mercedes_sls_gt3</code>, <code>p4-5_2011</code>
+            </p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-blue" href="acmanager://race/online/join?ip=141.95.149.233&amp;httpPort=9602">Content Manager ile Odaya Katıl</a>
+            <a class="btn btn-outline" href="https://acstuff.club/s/q:race/online/join?ip=141.95.149.233&amp;httpPort=9602" target="_blank" rel="noopener">Web Davet Linki</a>
+            <a class="btn btn-red" href="https://modsfire.com/c9P0Lifq8Z6u2" target="_blank" rel="noopener">Monza Pisti İndir</a>
+            <a class="btn btn-red" href="https://modsfire.com/GIa4xA76jF2gP88" target="_blank" rel="noopener">Toplu GT3 Paketi (ModsFire)</a>
+            <a class="btn btn-outline" href="https://sharemods.com/c1xyi7yu8vgw/GT3_Pack_V1.1.zip.html" target="_blank" rel="noopener">Toplu GT3 Paketi (ShareMods)</a>
+            <a class="btn btn-outline" href="steam://validate/244210">Steam ile 6 Orijinal Aracı Doğrula</a>
+          </div>
+        </article>
+
+        <article class="card card-live">
+          <div>
+            <div class="card-tag card-tag-live">CANLI 7/24 AÇIK // ŞİFRESİZ // 24 KİŞİLİK // MODERN GT3 PAKETİ</div>
+            <h3>Hazır Sunucu 2: AC EuroRacers.net | #50 Modern GT3 Ligi</h3>
+            <p>
+              <strong>Sunucu:</strong> <code>46.4.115.244:8405</code> (Modern modlu GT3 ligi odası)<br />
+              <strong>Not:</strong> Giriş için aşağıdaki tüm GT3 paket/araç modlarını Content Manager'a sürükleyin.
+            </p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-blue" href="acmanager://race/online/join?ip=46.4.115.244&amp;httpPort=8405">Content Manager ile Odaya Katıl</a>
+            <a class="btn btn-outline" href="https://acstuff.club/s/q:race/online/join?ip=46.4.115.244&amp;httpPort=8405" target="_blank" rel="noopener">Web Davet Linki</a>
+            <a class="btn btn-red" href="https://modsfire.com/GIa4xA76jF2gP88" target="_blank" rel="noopener">Toplu GT3 Paketi (GT3_Pack_V1.1.zip)</a>
+            <a class="btn btn-outline" href="https://modsfire.com/55m3hSV0jK4ce5V" target="_blank" rel="noopener">AMG GT3 EVO</a>
+            <a class="btn btn-outline" href="https://modsfire.com/YC0Ssx9Qqh21t2c" target="_blank" rel="noopener">Audi R8 LMS EVO II</a>
+            <a class="btn btn-outline" href="https://modsfire.com/jGOJcs6e2EqT3fY" target="_blank" rel="noopener">Aston Martin Vantage GT3</a>
+            <a class="btn btn-outline" href="https://modsfire.com/OfwK0PcwV529Y8V" target="_blank" rel="noopener">Porsche 992 GT3 R</a>
+            <a class="btn btn-outline" href="https://modsfire.com/3HUul3UvY732532" target="_blank" rel="noopener">BMW M4 GT3</a>
+            <a class="btn btn-outline" href="https://modsfire.com/u7sI1sg08qx8f0e" target="_blank" rel="noopener">Ferrari 296 GT3</a>
+          </div>
+        </article>
+
+        <article class="card card-live">
+          <div>
+            <div class="card-tag card-tag-live">CANLI 7/24 AÇIK // ŞİFRESİZ // TEK ARAÇLI MONZA</div>
+            <h3>Hazır Sunucu 3: Monza Tek Araçlı Hızlı Odalar</h3>
+            <p>
+              Çok araç indirmekle uğraşmadan sadece tek araçla hemen Monza'ya girmek için iki canlı oda:
+            </p>
+            <div class="server-sub">
+              <strong>Oda 3A (<code>141.95.149.233:9604</code>):</strong> Krreritas Monza Tatuus FA01 Formula
+            </div>
+            <div class="actions" style="margin-top:8px;">
+              <a class="btn btn-blue" href="acmanager://race/online/join?ip=141.95.149.233&amp;httpPort=9604">Monza Tatuus Odasına Katıl</a>
+              <a class="btn btn-red" href="https://modsfire.com/fL7tnX3xjj9CYf1" target="_blank" rel="noopener">Tatuus FA01 İndir (ModsFire)</a>
+            </div>
+            <div class="server-sub">
+              <strong>Oda 3B (<code>46.4.115.244:8384</code>):</strong> EuroRacers #2 Monza Lotus Exos 125 S1 F1
+            </div>
+            <div class="actions" style="margin-top:8px;">
+              <a class="btn btn-blue" href="acmanager://race/online/join?ip=46.4.115.244&amp;httpPort=8384">Monza F1 Odasına Katıl</a>
+            </div>
+          </div>
+        </article>
+
         <article class="card">
           <div>
             <div class="card-tag">B PLANI // STEAM TEK TIK</div>
@@ -767,14 +864,6 @@
           <div class="actions">
             <a class="btn btn-red" href="https://modsfire.com/us15zEPj5flWC71" target="_blank" rel="noopener">Direkt İndir (ModsFire)</a>
             <a class="btn btn-outline" href="https://modsfire.com/ueCD0pc6ypCbfd3" target="_blank" rel="noopener">Alternatif (ModsFire)</a>
-          </div>
-        </article>
-
-        <article class="card">
-          <div>
-            <div class="card-tag">B PLANI // SUNUCU KURMADAN</div>
-            <h3>Açık (Public) Monza Odasına Giriş</h3>
-            <p>LAN sunucusu Firewall tarafından engellenirse Content Manager &rarr; <strong>Online &rarr; Kunos</strong> sekmesinden arama kutusuna <code>monza</code> yazıp boş bir sunucuya ikiniz aynı anda tıklayarak sıfır kurulumla girebilirsiniz.</p>
           </div>
         </article>
       </div>

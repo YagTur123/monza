@@ -30,7 +30,7 @@ function Test-AcDir {
     param([string]$Path)
     if ([string]::IsNullOrWhiteSpace($Path)) { return $false }
     $clean = $Path.Trim().Trim('"')
-    return (Test-Path (Join-Path $clean "content\cars")) -and (Test-Path (Join-Path $clean "server\acServer.exe"))
+    return (Test-Path (Join-Path $clean "content\cars")) -and (Test-Path (Join-Path $clean "content\tracks"))
 }
 
 function Find-AssettoCorsa {
@@ -168,6 +168,184 @@ function Find-MonzaTrack {
     }
 }
 
+function Get-DefaultSurfacesIni {
+    return @"
+[SURFACE_0]
+KEY=ROAD
+FRICTION=0.98
+DAMPING=0
+WAV=
+WAV_PITCH=0
+FF_EFFECT=0
+DIRT_ADDITIVE=0
+IS_VALID_TRACK=1
+BLACK_FLAG_TIME=0
+SIN_HEIGHT=0
+SIN_LENGTH=0
+IS_PITLANE=0
+VIBRATION_GAIN=0
+VIBRATION_LENGTH=0
+
+[SURFACE_1]
+KEY=TARMAC
+FRICTION=0.98
+DAMPING=0
+WAV=
+WAV_PITCH=0
+FF_EFFECT=0
+DIRT_ADDITIVE=0
+IS_VALID_TRACK=1
+BLACK_FLAG_TIME=0
+SIN_HEIGHT=0
+SIN_LENGTH=0
+IS_PITLANE=0
+VIBRATION_GAIN=0
+VIBRATION_LENGTH=0
+
+[SURFACE_2]
+KEY=KERB
+FRICTION=0.92
+DAMPING=0
+WAV=kerb.wav
+WAV_PITCH=1.3
+FF_EFFECT=1
+DIRT_ADDITIVE=0
+IS_VALID_TRACK=1
+BLACK_FLAG_TIME=0
+SIN_HEIGHT=0.03
+SIN_LENGTH=0.5
+IS_PITLANE=0
+VIBRATION_GAIN=0.25
+VIBRATION_LENGTH=0.5
+
+[SURFACE_3]
+KEY=GRASS
+FRICTION=0.6
+DAMPING=0.05
+WAV=grass.wav
+WAV_PITCH=0
+FF_EFFECT=0
+DIRT_ADDITIVE=0.5
+IS_VALID_TRACK=0
+BLACK_FLAG_TIME=0
+SIN_HEIGHT=0.05
+SIN_LENGTH=1.2
+IS_PITLANE=0
+VIBRATION_GAIN=0.15
+VIBRATION_LENGTH=0.5
+
+[SURFACE_4]
+KEY=SAND
+FRICTION=0.45
+DAMPING=0.4
+WAV=sand.wav
+WAV_PITCH=0
+FF_EFFECT=0
+DIRT_ADDITIVE=1
+IS_VALID_TRACK=0
+BLACK_FLAG_TIME=0
+SIN_HEIGHT=0.08
+SIN_LENGTH=0.8
+IS_PITLANE=0
+VIBRATION_GAIN=0.3
+VIBRATION_LENGTH=0.4
+"@
+}
+
+function Ensure-FileFromSourceOrDefault {
+    param(
+        [string]$TargetPath,
+        [string]$SourcePath,
+        [string]$DefaultContent
+    )
+    $parent = Split-Path $TargetPath -Parent
+    if (-not (Test-Path $parent)) {
+        New-Item -Path $parent -ItemType Directory -Force | Out-Null
+    }
+    if (-not [string]::IsNullOrWhiteSpace($SourcePath) -and (Test-Path $SourcePath)) {
+        Copy-Item -Path $SourcePath -Destination $TargetPath -Force -ErrorAction SilentlyContinue
+        return "copied"
+    }
+    if (-not (Test-Path $TargetPath)) {
+        [System.IO.File]::WriteAllText($TargetPath, $DefaultContent, (New-Object System.Text.UTF8Encoding($false)))
+        return "generated"
+    }
+    return "exists"
+}
+
+function Ensure-ServerSurfaces {
+    param(
+        [string]$AcDir,
+        [hashtable]$Monza
+    )
+    $defaultIni = Get-DefaultSurfacesIni
+    $serverDir = Join-Path $AcDir "server"
+    $trackId = $Monza.TrackId
+    $layout = $Monza.Layout
+
+    # 1. server\system\cfg\surfaces.ini
+    $mainSysSurfaces = Join-Path $AcDir "system\cfg\surfaces.ini"
+    $srvSysSurfaces = Join-Path $serverDir "system\cfg\surfaces.ini"
+    $sysSource = if (Test-Path $mainSysSurfaces) { $mainSysSurfaces } else { $null }
+    [void](Ensure-FileFromSourceOrDefault -TargetPath $srvSysSurfaces -SourcePath $sysSource -DefaultContent $defaultIni)
+
+    # 2. Ana pist data\surfaces.ini ve server\content\tracks\<TrackId>\data\surfaces.ini
+    $mainTrackBaseSurfaces = Join-Path $AcDir "content\tracks\$trackId\data\surfaces.ini"
+    $mainTrackLayoutSurfaces = if (-not [string]::IsNullOrWhiteSpace($layout)) {
+        Join-Path $AcDir "content\tracks\$trackId\$layout\data\surfaces.ini"
+    } else { $null }
+
+    $bestTrackSource = $null
+    if ($mainTrackLayoutSurfaces -and (Test-Path $mainTrackLayoutSurfaces)) {
+        $bestTrackSource = $mainTrackLayoutSurfaces
+    } elseif (Test-Path $mainTrackBaseSurfaces) {
+        $bestTrackSource = $mainTrackBaseSurfaces
+    }
+
+    if (-not (Test-Path $mainTrackBaseSurfaces)) {
+        [void](Ensure-FileFromSourceOrDefault -TargetPath $mainTrackBaseSurfaces -SourcePath $bestTrackSource -DefaultContent $defaultIni)
+    }
+    if ($mainTrackLayoutSurfaces -and -not (Test-Path $mainTrackLayoutSurfaces)) {
+        [void](Ensure-FileFromSourceOrDefault -TargetPath $mainTrackLayoutSurfaces -SourcePath $mainTrackBaseSurfaces -DefaultContent $defaultIni)
+    }
+
+    $srvTrackBaseSurfaces = Join-Path $serverDir "content\tracks\$trackId\data\surfaces.ini"
+    [void](Ensure-FileFromSourceOrDefault -TargetPath $srvTrackBaseSurfaces -SourcePath $mainTrackBaseSurfaces -DefaultContent $defaultIni)
+
+    if (-not [string]::IsNullOrWhiteSpace($layout)) {
+        $srvTrackLayoutSurfaces = Join-Path $serverDir "content\tracks\$trackId\$layout\data\surfaces.ini"
+        $layoutSrc = if ($mainTrackLayoutSurfaces -and (Test-Path $mainTrackLayoutSurfaces)) { $mainTrackLayoutSurfaces } else { $mainTrackBaseSurfaces }
+        [void](Ensure-FileFromSourceOrDefault -TargetPath $srvTrackLayoutSurfaces -SourcePath $layoutSrc -DefaultContent $defaultIni)
+    }
+}
+
+function Disable-ServerChecksum {
+    param([string]$AcDir)
+    # Ana content\cars klasorune dokunmadan yalnizca server\content\cars icindeki data.acd dosyalarini temizle
+    $serverCarsDir = Join-Path $AcDir "server\content\cars"
+    if (Test-Path $serverCarsDir) {
+        $acdFiles = Get-ChildItem -Path $serverCarsDir -Filter "data.acd" -Recurse -File -ErrorAction SilentlyContinue
+        foreach ($f in $acdFiles) {
+            Remove-Item -LiteralPath $f.FullName -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+function Ensure-FirewallRules {
+    try {
+        $rules = @(
+            @{ Name = "AC_Monza_UDP_9600_In";  Dir = "in";  Proto = "UDP"; Port = "9600" },
+            @{ Name = "AC_Monza_UDP_9600_Out"; Dir = "out"; Proto = "UDP"; Port = "9600" },
+            @{ Name = "AC_Monza_TCP_9600_In";  Dir = "in";  Proto = "TCP"; Port = "9600" },
+            @{ Name = "AC_Monza_TCP_8081_In";  Dir = "in";  Proto = "TCP"; Port = "8081" }
+        )
+        foreach ($r in $rules) {
+            & netsh advfirewall firewall delete rule name="$($r.Name)" 2>&1 | Out-Null
+            & netsh advfirewall firewall add rule name="$($r.Name)" dir=$($r.Dir) action=allow protocol=$($r.Proto) localport=$($r.Port) 2>&1 | Out-Null
+        }
+    } catch {}
+}
+
 function Get-CarCatalog {
     param([string]$CarsRoot)
     $gt3Cars = New-Object System.Collections.Generic.List[hashtable]
@@ -250,7 +428,7 @@ function Get-LocalLanIPs {
 
 # --- ANA AKIS ---
 Write-Header
-Write-Host "[1/4] Assetto Corsa klasoru araniyor..." -ForegroundColor Cyan
+Write-Host "[1/5] Assetto Corsa klasoru araniyor..." -ForegroundColor Cyan
 $acDir = Find-AssettoCorsa
 
 while (-not (Test-AcDir $acDir)) {
@@ -260,16 +438,34 @@ while (-not (Test-AcDir $acDir)) {
     if ($manual -eq "q" -or $manual -eq "Q") { exit 1 }
     $acDir = $manual.Trim().Trim('"')
     if (-not (Test-AcDir $acDir)) {
-        Write-Host "[HATA] Bu klasorde 'content\cars' veya 'server\acServer.exe' bulunamadi!" -ForegroundColor Red
+        Write-Host "[HATA] Bu klasorde 'content\cars' veya 'content\tracks' bulunamadi!" -ForegroundColor Red
         Write-Host ""
     }
 }
 
 Write-Host "[OK] Assetto Corsa bulundu: $acDir" -ForegroundColor Green
+
+# acServer.exe varlik kontrolu
+$serverDir = Join-Path $acDir "server"
+$serverExe = Join-Path $serverDir "acServer.exe"
+while (-not (Test-Path $serverExe)) {
+    Write-Host ""
+    Write-Host "[UYARI] 'server\acServer.exe' bu bilgisayardan silinmis!" -ForegroundColor Red
+    Write-Host "Geri getirmek icin:" -ForegroundColor Yellow
+    Write-Host "  1. Tarayiciya veya Win+R penceresine su komutu yapistirip Enter'a basin:" -ForegroundColor White
+    Write-Host "     steam://validate/244210" -ForegroundColor Cyan
+    Write-Host "  2. Veya Steam -> Assetto Corsa -> Ozellikler -> Yuklu Dosyalar ->" -ForegroundColor White
+    Write-Host "     'Oyun dosyalarinin butunlugunu dogrula' secenegine tiklayin." -ForegroundColor White
+    Write-Host "  (Alternatif: Arkadasinin bilgisayarindan acServer.exe acmayi deneyebilirsin)" -ForegroundColor Gray
+    Write-Host ""
+    $srvAns = Read-Host "Dogrulama bittiyse ENTER'a basin (Cikis: Q)"
+    if ($srvAns -eq "q" -or $srvAns -eq "Q") { exit 1 }
+}
+Write-Host "[OK] acServer.exe hazir." -ForegroundColor Green
 Write-Host ""
 
 # 2. Monza pisti kontrolu
-Write-Host "[2/4] Monza pisti kontrol ediliyor..." -ForegroundColor Cyan
+Write-Host "[2/5] Monza pisti kontrol ediliyor..." -ForegroundColor Cyan
 $tracksRoot = Join-Path $acDir "content\tracks"
 $monza = Find-MonzaTrack -TracksRoot $tracksRoot
 
@@ -291,7 +487,7 @@ Write-Host "[OK] Monza pisti hazir: $($monza.TrackId) $layoutDisplay" -Foregroun
 Write-Host ""
 
 # 3. Arac tarama ve secim menusu
-Write-Host "[3/4] Yuklu araclar taraniyor..." -ForegroundColor Cyan
+Write-Host "[3/5] Yuklu araclar taraniyor..." -ForegroundColor Cyan
 $carsRoot = Join-Path $acDir "content\cars"
 $catalog = Get-CarCatalog -CarsRoot $carsRoot
 
@@ -316,7 +512,7 @@ if ($catalog.Gt3.Count -gt 0) {
         Write-Host "    ... ve $($catalog.Gt3.Count - 12) arac daha." -ForegroundColor Green
     }
     Write-Host ""
-    Write-Host "Oda Modunu Secin:" -ForegroundColor Cyan
+    Write-Host "Arac Modunu Secin:" -ForegroundColor Cyan
     Write-Host "  [1] Yuklu GT3 Araclariyla Monza Odasi Ac (Onerilen)" -ForegroundColor White
     Write-Host "  [2] Bilgisayardaki Mevcut Araclarla (Shuto araclari dahil) Monza Odasi Ac" -ForegroundColor White
     Write-Host ""
@@ -353,11 +549,51 @@ if ($catalog.Gt3.Count -gt 0) {
     }
 }
 
-# 4. server_cfg.ini ve entry_list.ini olusturma
+# 4. Seans / Oyun Modu Secimi
 Write-Host ""
-Write-Host "[4/4] Sunucu yapilandirmasi yaziliyor..." -ForegroundColor Cyan
+Write-Host "[4/5] Seans / Oyun Modunu Secin:" -ForegroundColor Cyan
+Write-Host "  [1] Hemen Yaris Modu (3 dk Kisa Siralama + 10 Tur Yaris - Tekrarli) [Onerilen]" -ForegroundColor White
+Write-Host "  [2] Serbest Gazlama / Trackday Modu (120 dk Acik Antrenman)" -ForegroundColor White
+Write-Host ""
+$modeChoice = Read-Host "Seciminiz [1/2] (Varsayilan 1)"
 
-$serverDir = Join-Path $acDir "server"
+if ($modeChoice -eq "2") {
+    $sessionBlock = @"
+[PRACTICE]
+NAME=Trackday Serbest Surus
+TIME=120
+IS_OPEN=1
+"@
+    $modeLabel = "Serbest Gazlama / Trackday (120 dk)"
+} else {
+    $sessionBlock = @"
+[QUALIFY]
+NAME=Kisa Siralama
+TIME=3
+IS_OPEN=1
+
+[RACE]
+NAME=Monza GT3 Yaris
+LAPS=10
+WAIT_TIME=20
+IS_OPEN=2
+"@
+    $modeLabel = "Hemen Yaris Modu (3 dk Siralama + 10 Tur Yaris)"
+}
+
+# 5. surfaces.ini korumasi, checksum temizligi, firewall ve config yazimi
+Write-Host ""
+Write-Host "[5/5] Sunucu guvenlik, surfaces.ini ve yapilandirma ayarlari yapiliyor..." -ForegroundColor Cyan
+
+Ensure-ServerSurfaces -AcDir $acDir -Monza $monza
+Write-Host "[OK] surfaces.ini cokme korumasi uygulandi." -ForegroundColor Green
+
+Disable-ServerChecksum -AcDir $acDir
+Write-Host "[OK] Checksum (MD5) kontrolu temizlendi." -ForegroundColor Green
+
+Ensure-FirewallRules
+Write-Host "[OK] Windows Firewall port izinleri (9600, 8081) islendi." -ForegroundColor Green
+
 $cfgDir = Join-Path $serverDir "cfg"
 if (-not (Test-Path $cfgDir)) {
     New-Item -Path $cfgDir -ItemType Directory -Force | Out-Null
@@ -439,25 +675,11 @@ LAN_DISCOVERY=1
 MAX_CLIENTS=$slot
 START_RULE=0
 RACE_GAS_PENALTY_DISABLED=1
-RESULT_SCREEN_TIME=60
+RESULT_SCREEN_TIME=45
 TIME_OF_DAY_MULT=1
 THREADS=2
 
-[PRACTICE]
-NAME=Practice
-TIME=60
-IS_OPEN=1
-
-[QUALIFY]
-NAME=Qualify
-TIME=15
-IS_OPEN=1
-
-[RACE]
-NAME=Race
-LAPS=10
-WAIT_TIME=30
-IS_OPEN=2
+$sessionBlock
 
 [DYNAMIC_TRACK]
 SESSION_START=98
@@ -491,19 +713,28 @@ Write-Host ""
 Write-Host "============================================================" -ForegroundColor Green
 Write-Host "SUNUCU AKTIF! Arkadasinla Content Manager -> Online -> LAN" -ForegroundColor Green
 Write-Host "sekmesine tiklayip direkt girebilirsiniz." -ForegroundColor Green
-Write-Host "(Gorunmezse Add IP kismindan su adresi ekleyin: ${primaryIp}:8081)" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "  Yerel IP Adresi : $primaryIp" -ForegroundColor Yellow
+Write-Host "  Add IP Adresi   : ${primaryIp}:8081" -ForegroundColor Yellow
+Write-Host "  Direkt Link     : acmanager://race/online/join?ip=${primaryIp}&httpPort=8081" -ForegroundColor Cyan
 if ($ips.Count -gt 1) {
-    Write-Host "Diger ag adresleri: $([string]::Join(', ', $ips.ToArray()))" -ForegroundColor Gray
+    Write-Host "  Diger IP'ler    : $([string]::Join(', ', $ips.ToArray()))" -ForegroundColor Gray
 }
 Write-Host "============================================================" -ForegroundColor Green
 Write-Host "Oda Adi   : SIM KAFE MONZA GT3 LAN" -ForegroundColor White
 Write-Host "Pist      : $($monza.TrackId) $layoutDisplay" -ForegroundColor White
+Write-Host "Oyun Modu : $modeLabel" -ForegroundColor White
 Write-Host "Arac Say. : $($addedModels.Count) model ($slot slot)" -ForegroundColor White
-Write-Host "NOT       : Windows Guvenlik Duvari sorarsa 'Erisime Izin Ver' deyin." -ForegroundColor Gray
-Write-Host "            Oyun bitene kadar bu siyah pencereyi KAPATMAYIN." -ForegroundColor Gray
+Write-Host "------------------------------------------------------------" -ForegroundColor DarkGray
+Write-Host "Oyun Ici Chat Admin Komutlari (Beklemeden Yaris Gecisi):" -ForegroundColor Yellow
+Write-Host "  /admin monza123     -> Yonetici yetkisi al" -ForegroundColor White
+Write-Host "  /next_session       -> Siralama beklemeden hemen yarisa gec" -ForegroundColor White
+Write-Host "  /restart_session    -> Yarisi bastan baslat" -ForegroundColor White
+Write-Host "------------------------------------------------------------" -ForegroundColor DarkGray
+Write-Host "NOT: Windows Guvenlik Duvari sorarsa 'Erisime Izin Ver' deyin." -ForegroundColor Gray
+Write-Host "     Oyun bitene kadar bu siyah pencereyi KAPATMAYIN." -ForegroundColor Gray
 Write-Host "============================================================" -ForegroundColor Green
 Write-Host ""
 
-$serverExe = Join-Path $serverDir "acServer.exe"
-$proc = Start-Process -FilePath $serverExe -WorkingDirectory $serverDir -NoNewWindow -PassThru -Wait
+$proc = Start-Process -FilePath $serverExe -ArgumentList "-c cfg/server_cfg.ini -e cfg/entry_list.ini" -WorkingDirectory $serverDir -NoNewWindow -PassThru -Wait
 exit $proc.ExitCode

@@ -16,6 +16,8 @@
       --red-hover: #c81525;
       --green: #16a34a;
       --green-hover: #15803d;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
       --amber: #f59e0b;
       --radius: 10px;
     }
@@ -46,15 +48,15 @@
     .italian-bar span:nth-child(3) { background: #e11d2e; }
 
     .container {
-      max-width: 980px;
+      max-width: 1000px;
       margin: 0 auto;
       padding: 28px 18px 56px;
     }
 
     header {
-      margin-bottom: 26px;
+      margin-bottom: 24px;
       border-bottom: 1px solid var(--border);
-      padding-bottom: 20px;
+      padding-bottom: 18px;
     }
 
     .eyebrow {
@@ -78,14 +80,14 @@
     .subtitle {
       color: var(--muted);
       font-size: 0.98rem;
-      max-width: 720px;
+      max-width: 740px;
     }
 
     .steps {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 14px;
-      margin-bottom: 24px;
+      margin-bottom: 22px;
     }
 
     .step-card {
@@ -130,7 +132,7 @@
       border-left: 4px solid var(--green);
       border-radius: var(--radius);
       padding: 20px;
-      margin-bottom: 28px;
+      margin-bottom: 22px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -139,7 +141,7 @@
     }
 
     .launcher-info {
-      flex: 1 1 360px;
+      flex: 1 1 380px;
     }
 
     .launcher-info h2 {
@@ -184,6 +186,161 @@
     .btn-primary-dl:hover {
       background: var(--green-hover);
       transform: translateY(-1px);
+    }
+
+    .tools-row {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .tool-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .tool-panel.join-panel {
+      border-left: 4px solid var(--blue);
+    }
+
+    .tool-panel.admin-panel {
+      border-left: 4px solid var(--amber);
+    }
+
+    .tool-panel h2 {
+      font-size: 1.04rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 5px;
+    }
+
+    .tool-panel p {
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .ip-form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .ip-input {
+      flex: 1 1 180px;
+      background: var(--surface-2);
+      border: 1px solid #354050;
+      border-radius: 7px;
+      color: #ffffff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92rem;
+      padding: 10px 12px;
+      outline: none;
+    }
+
+    .ip-input:focus {
+      border-color: var(--blue);
+    }
+
+    .btn-join {
+      background: var(--blue);
+      color: #ffffff;
+      border: none;
+      border-radius: 7px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-join:hover {
+      background: var(--blue-hover);
+    }
+
+    .join-sub {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .btn-mini {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-mini:hover {
+      background: #222934;
+      border-color: #475569;
+    }
+
+    .btn-mini.copied {
+      border-color: var(--green);
+      color: #86efac;
+    }
+
+    .join-status {
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: #93c5fd;
+      min-height: 18px;
+    }
+
+    .join-status.error {
+      color: #fca5a5;
+    }
+
+    .cmd-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cmd-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 10px;
+    }
+
+    .cmd-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .cmd-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.86rem;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .cmd-desc {
+      font-size: 0.77rem;
+      color: var(--muted);
     }
 
     .section-title {
@@ -248,9 +405,9 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.84rem;
+      font-size: 0.83rem;
       font-weight: 600;
-      padding: 8px 13px;
+      padding: 8px 12px;
       border-radius: 7px;
       text-decoration: none;
       transition: background 0.15s ease, border-color 0.15s ease;
@@ -323,8 +480,8 @@
       font-size: 0.85em;
     }
 
-    @media (max-width: 780px) {
-      .steps, .tips {
+    @media (max-width: 820px) {
+      .steps, .tips, .tools-row {
         grid-template-columns: 1fr;
       }
       .btn-primary-dl {
@@ -342,7 +499,7 @@
       <h1>Monza GT3 — Ortak LAN Odası Kurulumu</h1>
       <p class="subtitle">
         Sadece Shuto yüklü ve orijinal araçları silinmiş sim kafe bilgisayarlarında 2 dakikada
-        Monza pisti + GT3 araçlarını kurup arkadaşınla aynı odada yarışmak için hazır sayfa.
+        Monza pisti + GT3 araçlarını kurup arkadaşınla aynı odada yarışmak için hazır paket.
       </p>
     </header>
 
@@ -360,15 +517,14 @@
         <h2>Sunucu Başlatıcıyı Açın</h2>
         <p>
           Aşağıdaki <strong>Monza_GT3_Sunucu_Baslat.bat</strong> dosyasını indirip çift tıklayın.
-          Assetto Corsa klasörünü, Monza'yı ve GT3 araçlarını otomatik bulup LAN odasını açar.
+          <code>surfaces.ini</code> çökme korumasını uygular, Firewall portlarını açar ve hemen yarış veya serbest modda odayı kurar.
         </p>
       </div>
       <div class="step-card">
         <span class="step-num">ADIM 3 · İKİ BİLGİSAYAR</span>
-        <h2>LAN Sekmesinden Katılın</h2>
+        <h2>LAN veya IP ile Katılın</h2>
         <p>
-          Content Manager içinde <strong>Online &rarr; LAN</strong> sekmesine tıklayın.
-          Listede çıkan <strong>SIM KAFE MONZA GT3 LAN</strong> odasını seçip arabanızı belirleyin ve <strong>Join</strong> deyin.
+          Content Manager içinde <strong>Online &rarr; LAN</strong> sekmesine girip <strong>SIM KAFE MONZA GT3 LAN</strong> odasına tıklayın. Oda görünmezse aşağıdaki <strong>IP ile Tek Tıkla Katıl</strong> kutusunu kullanın.
         </p>
       </div>
     </section>
@@ -377,8 +533,8 @@
       <div class="launcher-info">
         <h2>Otomatik Monza GT3 LAN Sunucu Başlatıcı</h2>
         <p>
-          Ayar dosyalarını (<code>server_cfg.ini</code> ve <code>entry_list.ini</code>) sıfırdan kendisi yazar.
-          Her araçtan 4'er kopya slot açar, hasarı kapatır ve lastikleri sıcak başlatır.
+          <code>surfaces.ini</code> kopyalama, MD5 checksum temizliği, Firewall port açılışı (9600/8081),
+          <strong>Hemen Yarış (3 dk Sıralama + 10 Tur)</strong> veya <strong>Serbest Trackday</strong> seçimi dahildir.
         </p>
         <div class="launcher-note">
           Windows SmartScreen uyarısı çıkarsa: <strong>Ek bilgi &rarr; Yine de çalıştır</strong> seçin. Sunucu penceresini yarış bitene kadar kapatmayın.
@@ -387,6 +543,62 @@
       <a class="btn-primary-dl" href="Monza_GT3_Sunucu_Baslat.bat" download="Monza_GT3_Sunucu_Baslat.bat">
         Monza_GT3_Sunucu_Baslat.bat İndir
       </a>
+    </section>
+
+    <section class="tools-row" aria-label="Bağlantı ve Admin Araçları">
+      <div class="tool-panel join-panel">
+        <h2>2. Bilgisayardan IP ile Tek Tıkla Odaya Katıl</h2>
+        <p>
+          LAN listesinde oda görünmezse, 1. bilgisayarın siyah ekranında yazan yerel IP adresini yazıp butona basın;
+          Content Manager doğrudan odayı açar.
+        </p>
+        <form class="ip-form" id="directJoinForm" onsubmit="return handleDirectJoin(event);">
+          <input
+            type="text"
+            id="lanIpInput"
+            class="ip-input"
+            placeholder="Örn: 192.168.1.45"
+            autocomplete="off"
+            aria-label="Sunucu Yerel IP Adresi"
+          />
+          <button type="submit" class="btn-join">Content Manager ile Direkt Odaya Katıl</button>
+        </form>
+        <div class="join-sub">
+          <span id="joinPreview">Hedef: <code>acmanager://race/online/join?ip=IP&amp;httpPort=8081</code></span>
+          <button type="button" class="btn-mini" onclick="copyIpPort(this)">IP:8081 Kopyala</button>
+        </div>
+        <div id="joinStatus" class="join-status" role="status"></div>
+      </div>
+
+      <div class="tool-panel admin-panel">
+        <h2>Oyun İçi Hızlı Admin Komutları</h2>
+        <p>
+          Yarış içinde chat kutusunu açıp sırayla yapıştırın; sıralama süresini beklemeden anında yarışa geçersiniz.
+        </p>
+        <div class="cmd-list">
+          <div class="cmd-row">
+            <div class="cmd-meta">
+              <span class="cmd-code">/admin monza123</span>
+              <span class="cmd-desc">Yönetici yetkisi alır</span>
+            </div>
+            <button type="button" class="btn-mini" onclick="copyText('/admin monza123', this)">Kopyala</button>
+          </div>
+          <div class="cmd-row">
+            <div class="cmd-meta">
+              <span class="cmd-code">/next_session</span>
+              <span class="cmd-desc">Sıralamayı beklemeden anında yarışa geçer</span>
+            </div>
+            <button type="button" class="btn-mini" onclick="copyText('/next_session', this)">Kopyala</button>
+          </div>
+          <div class="cmd-row">
+            <div class="cmd-meta">
+              <span class="cmd-code">/restart_session</span>
+              <span class="cmd-desc">Yarışı baştan başlatır</span>
+            </div>
+            <button type="button" class="btn-mini" onclick="copyText('/restart_session', this)">Kopyala</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section aria-label="Monza Pisti">
@@ -419,18 +631,18 @@
     </section>
 
     <section aria-label="GT3 Araçları">
-      <h2 class="section-title">2. GT3 Araçları (İki Bilgisayara da Aynılarını Kurun)</h2>
-      <p class="section-desc">Hepsini kurmak zorunda değilsiniz; sürmek istediğiniz 2–3 aracı seçip ikiniz de aynı dosyaları indirip Content Manager'a sürükleyin.</p>
+      <h2 class="section-title">2. GT3 Araçları — Direkt İndirme (İki Bilgisayara da Aynılarını Kurun)</h2>
+      <p class="section-desc">Hepsini kurmak zorunda değilsiniz; sürmek istediğiniz 2–3 aracı seçip doğrudan ModsFire butonlarından indirin ve ikiniz de Content Manager'a sürükleyin.</p>
       <div class="grid">
         <article class="card">
           <div>
             <div class="card-tag">GT3 // PORSCHE</div>
             <h3>Porsche 911 (992) GT3 R</h3>
-            <p>Güncel 992 kasa GT3 yarış aracı. Hızlı kurulum için direkt ModsFire linki mevcut.</p>
+            <p>Güncel 992 kasa GT3 yarış aracı. Direkt ModsFire indirme bağlantısı hazır.</p>
           </div>
           <div class="actions">
             <a class="btn btn-red" href="https://modsfire.com/OfwK0PcwV529Y8V" target="_blank" rel="noopener">Direkt İndir (ModsFire)</a>
-            <a class="btn btn-outline" href="https://www.assettoworld.com/car/porsche-992-gt3-r" target="_blank" rel="noopener">Alternatif (AssettoWorld)</a>
+            <a class="btn btn-outline" href="https://www.assettoworld.com/car/porsche-992-gt3-r" target="_blank" rel="noopener">AssettoWorld</a>
           </div>
         </article>
 
@@ -441,8 +653,9 @@
             <p>Monza düzlüklerinde ve şikanlarda dengeli modern BMW GT3 modeli.</p>
           </div>
           <div class="actions">
-            <a class="btn btn-red" href="https://www.assettoworld.com/car/bmw-m4-gt3-evo" target="_blank" rel="noopener">İndirme Sayfası</a>
-            <a class="btn btn-outline" href="https://www.assettoworld.com/car/bmw-m4-gt3-5" target="_blank" rel="noopener">Alternatif (M4 GT3)</a>
+            <a class="btn btn-red" href="https://modsfire.com/3HUul3UvY732532" target="_blank" rel="noopener">Direkt İndir (ModsFire)</a>
+            <a class="btn btn-outline" href="https://modsfire.com/u10vsGic353ANbk" target="_blank" rel="noopener">2025 CSP Sürümü</a>
+            <a class="btn btn-outline" href="https://www.assettoworld.com/car/bmw-m4-gt3-evo" target="_blank" rel="noopener">AssettoWorld</a>
           </div>
         </article>
 
@@ -453,18 +666,21 @@
             <p>Monza'nın ev sahibi Ferrari'nin güncel V6 çift turbo GT3 yarış otomobili.</p>
           </div>
           <div class="actions">
-            <a class="btn btn-red" href="https://www.assettoworld.com/car/ferrari-296-gt3-1" target="_blank" rel="noopener">İndirme Sayfası</a>
+            <a class="btn btn-red" href="https://modsfire.com/u7sI1sg08qx8f0e" target="_blank" rel="noopener">Direkt İndir (ACC)</a>
+            <a class="btn btn-outline" href="https://modsfire.com/mT8HkiFEK24QWUd" target="_blank" rel="noopener">Direkt İndir (URD)</a>
+            <a class="btn btn-outline" href="https://www.assettoworld.com/car/ferrari-296-gt3-1" target="_blank" rel="noopener">AssettoWorld</a>
           </div>
         </article>
 
         <article class="card">
           <div>
-            <div class="card-tag">GT3 // FERRARI ACC</div>
-            <h3>Ferrari 488 GT3 EVO (ACC)</h3>
-            <p>Competizione fiziği ve sesleriyle uyarlanmış klasik V8 Ferrari GT3.</p>
+            <div class="card-tag">GT3 // FERRARI V8</div>
+            <h3>Ferrari 488 GT3 EVO</h3>
+            <p>Competizione fiziği ve yüksek devirli V8 sesiyle klasik Ferrari GT3.</p>
           </div>
           <div class="actions">
-            <a class="btn btn-red" href="https://www.assettoworld.com/car/ferrari-488-gt3-acc" target="_blank" rel="noopener">İndirme Sayfası</a>
+            <a class="btn btn-red" href="https://modsfire.com/O882Gg62ZY42kkO" target="_blank" rel="noopener">Direkt İndir (ModsFire)</a>
+            <a class="btn btn-outline" href="https://www.assettoworld.com/car/ferrari-488-gt3-acc" target="_blank" rel="noopener">AssettoWorld</a>
           </div>
         </article>
 
@@ -475,7 +691,31 @@
             <p>Güçlü V8 sesi ve stabil yol tutuşuyla Monza için en popüler GT3 seçeneklerinden.</p>
           </div>
           <div class="actions">
-            <a class="btn btn-red" href="https://www.assettoworld.com/car/mercedes-benz-amg-gt3-evo-2020" target="_blank" rel="noopener">İndirme Sayfası</a>
+            <a class="btn btn-red" href="https://modsfire.com/6hQk9dInqLtg8S7" target="_blank" rel="noopener">Direkt İndir (ModsFire)</a>
+            <a class="btn btn-outline" href="https://modsfire.com/ePMO8On2i8h7zB1" target="_blank" rel="noopener">Alternatif (2020)</a>
+            <a class="btn btn-outline" href="https://www.assettoworld.com/car/mercedes-benz-amg-gt3-evo-2020" target="_blank" rel="noopener">AssettoWorld</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div>
+            <div class="card-tag">GT3 // AUDI</div>
+            <h3>Audi R8 LMS GT3 EVO II</h3>
+            <p>Atmosferik V10 motoru ve yüksek viraj dengesiyle ikonik R8 GT3.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-red" href="https://modsfire.com/L444LeFkOQt4BLf" target="_blank" rel="noopener">Direkt İndir (ModsFire)</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div>
+            <div class="card-tag">GT3 // LAMBORGHINI</div>
+            <h3>Lamborghini Temerario GT3</h3>
+            <p>Yeni nesil Lamborghini GT3 yarış aracı paketi.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-red" href="https://modsfire.com/tiCa3q3E2qEIpfK" target="_blank" rel="noopener">Direkt İndir (ModsFire)</a>
           </div>
         </article>
 
@@ -483,7 +723,7 @@
           <div>
             <div class="card-tag">KOLEKSİYON</div>
             <h3>Tüm GT3 Araçları Listesi</h3>
-            <p>Lamborghini, Audi R8, McLaren veya Aston Martin GT3 arıyorsanız en çok indirilenler listesi.</p>
+            <p>McLaren, Aston Martin veya farklı GT3 araçları arıyorsanız en çok indirilenler listesi.</p>
           </div>
           <div class="actions">
             <a class="btn btn-outline" href="https://www.assettoworld.com/cars/search?q=gt3&sort=downloads" target="_blank" rel="noopener">Tüm GT3 Modlarını Aç</a>
@@ -497,15 +737,16 @@
         <h3>İpucu 1: Hiç Araç İndirmeden Hemen Oynamak</h3>
         <p>
           Araç indirmekle uğraşmak istemezseniz sadece <strong>Monza pistini</strong> kurun.
-          Sunucu Başlatıcı programını açınca menüden <strong>[2]</strong> seçeneğini seçin;
+          Sunucu Başlatıcı programını açınca araç menüsünden <strong>[2]</strong> seçeneğini seçin;
           bilgisayardaki mevcut Shuto araçlarıyla bile anında Monza'da yarışabilirsiniz.
         </p>
       </div>
       <div class="tip-box">
-        <h3>İpucu 2: Steam Dosya Doğrulama ile Orijinal GT3'ler</h3>
+        <h3>İpucu 2: Steam Dosya Doğrulama (Orijinal GT3 + acServer)</h3>
         <p>
-          Sim kafede Steam açıksa ve internet hızlıysa: <strong>Steam &rarr; Assetto Corsa &rarr; Özellikler &rarr; Yüklü Dosyalar &rarr; "Oyun dosyalarının bütünlüğünü doğrula"</strong>
-          diyerek silinmiş tüm orijinal GT3 araçlarını ve Monza pistini geri getirebilirsiniz.
+          Sim kafede Steam açıksa ve <code>acServer.exe</code> veya orijinal araçlar silinmişse:
+          <strong>Steam &rarr; Assetto Corsa &rarr; Özellikler &rarr; Yüklü Dosyalar &rarr; "Oyun dosyalarının bütünlüğünü doğrula"</strong>
+          (veya tarayıcıda <code>steam://validate/244210</code>) diyerek hepsini geri getirebilirsiniz.
         </p>
       </div>
     </section>
@@ -515,5 +756,100 @@
       <span>LAN'da oda görünmezse Content Manager &rarr; Online &rarr; Add IP kısmına siyah ekrandaki <code>IP:8081</code> adresini girin.</span>
     </footer>
   </main>
+
+  <script>
+    function parseHostAndPort(rawValue) {
+      var val = (rawValue || "").trim();
+      if (!val) return null;
+      val = val.replace(/^https?:\/\//i, "").replace(/\/.*$/, "");
+      var parts = val.split(":");
+      var ip = parts[0].trim();
+      var port = parts.length > 1 && /^\d+$/.test(parts[1].trim()) ? parts[1].trim() : "8081";
+      if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(ip) && !/^[a-zA-Z0-9.-]+$/.test(ip)) {
+        return null;
+      }
+      return { ip: ip, port: port };
+    }
+
+    var ipInput = document.getElementById("lanIpInput");
+    var joinPreview = document.getElementById("joinPreview");
+    var joinStatus = document.getElementById("joinStatus");
+
+    if (ipInput) {
+      ipInput.addEventListener("input", function () {
+        var parsed = parseHostAndPort(ipInput.value);
+        if (parsed) {
+          joinPreview.innerHTML = 'Hedef: <code>acmanager://race/online/join?ip=' + parsed.ip + '&amp;httpPort=' + parsed.port + '</code>';
+        } else {
+          joinPreview.innerHTML = 'Hedef: <code>acmanager://race/online/join?ip=IP&amp;httpPort=8081</code>';
+        }
+      });
+    }
+
+    function handleDirectJoin(e) {
+      e.preventDefault();
+      var parsed = parseHostAndPort(ipInput.value);
+      if (!parsed) {
+        joinStatus.className = "join-status error";
+        joinStatus.textContent = "Lütfen 1. bilgisayarın siyah ekranında yazan geçerli IP adresini girin (Örn: 192.168.1.45).";
+        ipInput.focus();
+        return false;
+      }
+      var uri = "acmanager://race/online/join?ip=" + encodeURIComponent(parsed.ip) + "&httpPort=" + encodeURIComponent(parsed.port);
+      joinStatus.className = "join-status";
+      joinStatus.textContent = "Content Manager açılıyor: " + parsed.ip + ":" + parsed.port;
+      window.location.href = uri;
+      return false;
+    }
+
+    function copyText(text, btn) {
+      function markCopied() {
+        if (!btn) return;
+        var orig = btn.getAttribute("data-orig") || btn.textContent;
+        btn.setAttribute("data-orig", orig);
+        btn.textContent = "Kopyalandı!";
+        btn.classList.add("copied");
+        setTimeout(function () {
+          btn.textContent = orig;
+          btn.classList.remove("copied");
+        }, 1500);
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(markCopied).catch(function () {
+          fallbackCopy(text);
+          markCopied();
+        });
+      } else {
+        fallbackCopy(text);
+        markCopied();
+      }
+    }
+
+    function fallbackCopy(text) {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch (err) {}
+      document.body.removeChild(ta);
+    }
+
+    function copyIpPort(btn) {
+      var parsed = parseHostAndPort(ipInput.value);
+      if (!parsed) {
+        joinStatus.className = "join-status error";
+        joinStatus.textContent = "Kopyalamak için önce IP adresini yazın (Örn: 192.168.1.45).";
+        ipInput.focus();
+        return;
+      }
+      var target = parsed.ip + ":" + parsed.port;
+      joinStatus.className = "join-status";
+      joinStatus.textContent = target + " panoya kopyalandı. Content Manager -> Add IP kısmına yapıştırabilirsiniz.";
+      copyText(target, btn);
+    }
+  </script>
 </body>
 </html>

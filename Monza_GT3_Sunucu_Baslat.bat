@@ -445,21 +445,49 @@ while (-not (Test-AcDir $acDir)) {
 
 Write-Host "[OK] Assetto Corsa bulundu: $acDir" -ForegroundColor Green
 
-# acServer.exe varlik kontrolu
+# acServer.exe varlik kontrolu ve otomatik indirici
 $serverDir = Join-Path $acDir "server"
 $serverExe = Join-Path $serverDir "acServer.exe"
+$acServerUrl = "https://media.githubusercontent.com/media/Sezynex/AssettoServer-Traffic/8f58bb274534f034e12803ee2f43840e5022b1e5/acServer.exe"
+
 while (-not (Test-Path $serverExe)) {
     Write-Host ""
-    Write-Host "[UYARI] 'server\acServer.exe' bu bilgisayardan silinmis!" -ForegroundColor Red
-    Write-Host "Geri getirmek icin:" -ForegroundColor Yellow
-    Write-Host "  1. Tarayiciya veya Win+R penceresine su komutu yapistirip Enter'a basin:" -ForegroundColor White
-    Write-Host "     steam://validate/244210" -ForegroundColor Cyan
-    Write-Host "  2. Veya Steam -> Assetto Corsa -> Ozellikler -> Yuklu Dosyalar ->" -ForegroundColor White
-    Write-Host "     'Oyun dosyalarinin butunlugunu dogrula' secenegine tiklayin." -ForegroundColor White
-    Write-Host "  (Alternatif: Arkadasinin bilgisayarindan acServer.exe acmayi deneyebilirsin)" -ForegroundColor Gray
+    Write-Host "[UYARI] 'server\acServer.exe' bu bilgisayarda bulunamadi!" -ForegroundColor Yellow
+    Write-Host "  [1] acServer.exe Dosyasini Internetten Otomatik Indir ve Kur (Onerilen)" -ForegroundColor White
+    Write-Host "  [2] Steam Dosya Dogrulamasi Baslat (steam://validate/244210)" -ForegroundColor White
+    Write-Host "  [Q] Cikis" -ForegroundColor Gray
     Write-Host ""
-    $srvAns = Read-Host "Dogrulama bittiyse ENTER'a basin (Cikis: Q)"
+    $srvAns = Read-Host "Seciminiz [1/2/Q] (Varsayilan 1)"
     if ($srvAns -eq "q" -or $srvAns -eq "Q") { exit 1 }
+
+    if ($srvAns -eq "2") {
+        Start-Process "steam://validate/244210"
+        Write-Host "[BILGI] Steam dogrulamasi tetiklendi. Bitince ENTER'a basin." -ForegroundColor Cyan
+        [void](Read-Host "Devam etmek icin ENTER")
+        continue
+    }
+
+    if (-not (Test-Path $serverDir)) {
+        New-Item -Path $serverDir -ItemType Directory -Force | Out-Null
+    }
+    Write-Host "[BILGI] acServer.exe indiriliyor (~119 MB), lutfen bekleyin..." -ForegroundColor Cyan
+    $curlCmd = Get-Command "curl.exe" -ErrorAction SilentlyContinue
+    if ($curlCmd) {
+        & curl.exe -L --fail -o "$serverExe" "$acServerUrl"
+    } else {
+        try {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            Invoke-WebRequest -Uri $acServerUrl -OutFile $serverExe -UseBasicParsing
+        } catch {}
+    }
+
+    if ((Test-Path $serverExe) -and ((Get-Item $serverExe).Length -gt 1000000)) {
+        Write-Host "[OK] acServer.exe basariyla indirildi ve kuruldu!" -ForegroundColor Green
+        break
+    } else {
+        Remove-Item -LiteralPath $serverExe -Force -ErrorAction SilentlyContinue
+        Write-Host "[HATA] Indirme basarisiz oldu. Internet baglantisini kontrol edip [1] veya [2] deneyin." -ForegroundColor Red
+    }
 }
 Write-Host "[OK] acServer.exe hazir." -ForegroundColor Green
 Write-Host ""

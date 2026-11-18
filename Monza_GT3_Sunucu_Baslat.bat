@@ -119,40 +119,22 @@ function Find-AssettoCorsa {
     return $null
 }
 
-function Find-MonzaTrack {
-    param([string]$TracksRoot)
-    $allTracks = Get-ChildItem -Path $TracksRoot -Directory -ErrorAction SilentlyContinue
-    # Oncelik: tam "monza", sonra "ks_monza", sonra "monza_gp_2017", sonra icinde "monza" gecen herhangi biri
-    $selected = $allTracks | Where-Object { $_.Name -eq "monza" } | Select-Object -First 1
-    if (-not $selected) {
-        $selected = $allTracks | Where-Object { $_.Name -eq "ks_monza" } | Select-Object -First 1
-    }
-    if (-not $selected) {
-        $selected = $allTracks | Where-Object { $_.Name -eq "monza_gp_2017" } | Select-Object -First 1
-    }
-    if (-not $selected) {
-        $selected = $allTracks | Where-Object { $_.Name -imatch "monza" } | Select-Object -First 1
-    }
-    if (-not $selected) { return $null }
-
-    $trackDir = $selected.FullName
-    $trackId = $selected.Name
+function Get-TrackLayout {
+    param([string]$TrackDir)
     $layout = ""
-
-    # Layout kontrolu: root models.ini yoksa veya ui alt klasorlerinde layout varsa ilkini sec
-    $hasRootModels = Test-Path (Join-Path $trackDir "models.ini")
-    $uiDir = Join-Path $trackDir "ui"
+    $hasRootModels = Test-Path (Join-Path $TrackDir "models.ini")
+    $uiDir = Join-Path $TrackDir "ui"
     if (Test-Path $uiDir) {
         $subLayouts = Get-ChildItem -Path $uiDir -Directory -ErrorAction SilentlyContinue
         if (-not $hasRootModels -and $subLayouts.Count -gt 0) {
-            $gpLayout = $subLayouts | Where-Object { $_.Name -imatch "^(gp|layout_gp|full)$" } | Select-Object -First 1
+            $gpLayout = $subLayouts | Where-Object { $_.Name -imatch "^(gp|layout_gp|full|monza)$" } | Select-Object -First 1
             if ($gpLayout) {
                 $layout = $gpLayout.Name
             } else {
                 $layout = $subLayouts[0].Name
             }
         } elseif ($subLayouts.Count -gt 0 -and -not (Test-Path (Join-Path $uiDir "ui_track.json"))) {
-            $gpLayout = $subLayouts | Where-Object { $_.Name -imatch "^(gp|layout_gp|full)$" } | Select-Object -First 1
+            $gpLayout = $subLayouts | Where-Object { $_.Name -imatch "^(gp|layout_gp|full|monza)$" } | Select-Object -First 1
             if ($gpLayout) {
                 $layout = $gpLayout.Name
             } else {
@@ -160,12 +142,37 @@ function Find-MonzaTrack {
             }
         }
     }
+    return $layout
+}
 
-    return @{
-        TrackId = $trackId
-        Layout  = $layout
-        Path    = $trackDir
+function Find-MonzaTrack {
+    param([string]$TracksRoot)
+    $allTracks = Get-ChildItem -Path $TracksRoot -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -imatch "monza" }
+    if (-not $allTracks -or $allTracks.Count -eq 0) { return @() }
+
+    # Oncelik: 1) asw-monza / asw_monza / asw*monza, 2) monza, 3) ks_monza, 4) monza_gp_2017, 5) digerleri
+    $sorted = $allTracks | Sort-Object @{
+        Expression = {
+            $n = $_.Name.ToLowerInvariant()
+            if ($n -eq "asw-monza" -or $n -eq "asw_monza") { 0 }
+            elseif ($n -match "asw.*monza") { 1 }
+            elseif ($n -eq "monza") { 2 }
+            elseif ($n -eq "ks_monza") { 3 }
+            elseif ($n -eq "monza_gp_2017") { 4 }
+            else { 5 }
+        }
+    }, Name
+
+    $results = New-Object System.Collections.Generic.List[hashtable]
+    foreach ($t in $sorted) {
+        $results.Add(@{
+            TrackId = $t.Name
+            Layout  = (Get-TrackLayout -TrackDir $t.FullName)
+            Path    = $t.FullName
+        })
     }
+    return $results.ToArray()
 }
 
 function Get-DefaultSurfacesIni {
@@ -530,12 +537,12 @@ while (-not (Test-Path $serverExe)) {
 Write-Host "[OK] acServer.exe hazir." -ForegroundColor Green
 Write-Host ""
 
-# 2. Monza pisti kontrolu
-Write-Host "[2/5] Monza pisti kontrol ediliyor..." -ForegroundColor Cyan
+# 2. Monza pisti kontrolu (Oncelik: asw-monza)
+Write-Host "[2/5] Monza pisti kontrol ediliyor (asw-monza oncelikli)..." -ForegroundColor Cyan
 $tracksRoot = Join-Path $acDir "content\tracks"
-$monza = Find-MonzaTrack -TracksRoot $tracksRoot
+$monzaList = @(Find-MonzaTrack -TracksRoot $tracksRoot)
 
-while (-not $monza) {
+while ($monzaList.Count -eq 0) {
     Write-Host "[UYARI] Bilgisayarda MONZA pisti yuklu degil!" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "Yapman gerekenler:" -ForegroundColor White
@@ -545,11 +552,33 @@ while (-not $monza) {
     Write-Host ""
     $ans = Read-Host "Kurulumu yaptiktan sonra devam etmek icin ENTER'a bas (Cikis: Q)"
     if ($ans -eq "q" -or $ans -eq "Q") { exit 1 }
-    $monza = Find-MonzaTrack -TracksRoot $tracksRoot
+    $monzaList = @(Find-MonzaTrack -TracksRoot $tracksRoot)
+}
+
+$monza = $monzaList[0]
+if ($monzaList.Count -gt 1) {
+    Write-Host "Birden fazla Monza pisti bulundu:" -ForegroundColor White
+    for ($ti = 0; $ti -lt $monzaList.Count; $ti++) {
+        $tNum = $ti + 1
+        $m = $monzaList[$ti]
+        $lay = if ([string]::IsNullOrWhiteSpace($m.Layout)) { "(Varsayilan)" } else { "[$($m.Layout)]" }
+        if ($ti -eq 0) {
+            Write-Host "  [$tNum] $($m.TrackId) $lay  <-- VARSAYILAN" -ForegroundColor Green
+        } else {
+            Write-Host "  [$tNum] $($m.TrackId) $lay" -ForegroundColor Gray
+        }
+    }
+    $tPick = Read-Host "Pist secimi (Varsayilan ENTER = 1)"
+    $tNumParsed = 0
+    if (-not [string]::IsNullOrWhiteSpace($tPick) -and [int]::TryParse($tPick.Trim(), [ref]$tNumParsed)) {
+        if ($tNumParsed -ge 1 -and $tNumParsed -le $monzaList.Count) {
+            $monza = $monzaList[$tNumParsed - 1]
+        }
+    }
 }
 
 $layoutDisplay = if ([string]::IsNullOrWhiteSpace($monza.Layout)) { "(Varsayilan)" } else { $monza.Layout }
-Write-Host "[OK] Monza pisti hazir: $($monza.TrackId) $layoutDisplay" -ForegroundColor Green
+Write-Host "[OK] Secilen Monza pisti: $($monza.TrackId) $layoutDisplay" -ForegroundColor Green
 Write-Host ""
 
 # 3. Arac secim ekrani (Varsayilan: Sadece tek arac 296 GT3)

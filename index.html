@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monza GT3 — Sim Kafe Hızlı Kurulum &amp; LAN Paketi</title>
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --surface: #13171d;
+      --surface-2: #191e26;
+      --border: #262d38;
+      --text: #eef2f6;
+      --muted: #98a4b3;
+      --red: #e11d2e;
+      --red-hover: #c81525;
+      --green: #16a34a;
+      --green-hover: #15803d;
+      --amber: #f59e0b;
+      --radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      background-image: radial-gradient(circle at 15% 0%, rgba(225, 29, 46, 0.08), transparent 40%),
+                        radial-gradient(circle at 85% 10%, rgba(22, 163, 74, 0.06), transparent 35%);
+      color: var(--text);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .italian-bar {
+      height: 4px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+    .italian-bar span:nth-child(1) { background: #16a34a; }
+    .italian-bar span:nth-child(2) { background: #f8fafc; }
+    .italian-bar span:nth-child(3) { background: #e11d2e; }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 18px 56px;
+    }
+
+    header {
+      margin-bottom: 26px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+    }
+
+    .eyebrow {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--red);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: clamp(1.65rem, 3.2vw, 2.25rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.98rem;
+      max-width: 720px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .step-num {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    .step-card h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #ffffff;
+    }
+
+    .step-card p {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .step-card strong {
+      color: var(--text);
+    }
+
+    .launcher-box {
+      background: var(--surface);
+      border: 1px solid #2e3847;
+      border-left: 4px solid var(--green);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .launcher-info {
+      flex: 1 1 360px;
+    }
+
+    .launcher-info h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .launcher-info p {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .launcher-note {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 10px;
+      display: inline-block;
+    }
+
+    .btn-primary-dl {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--green);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.96rem;
+      padding: 14px 22px;
+      border-radius: 8px;
+      transition: background 0.15s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary-dl:hover {
+      background: var(--green-hover);
+      transform: translateY(-1px);
+    }
+
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .section-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-tag {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .card h3 {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .card p {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.84rem;
+      font-weight: 600;
+      padding: 8px 13px;
+      border-radius: 7px;
+      text-decoration: none;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-red {
+      background: var(--red);
+      color: #ffffff;
+    }
+    .btn-red:hover {
+      background: var(--red-hover);
+    }
+
+    .btn-outline {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover {
+      border-color: #475569;
+      background: #202731;
+    }
+
+    .tips {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .tip-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: var(--radius);
+      padding: 15px 16px;
+    }
+
+    .tip-box h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 5px;
+    }
+
+    .tip-box p {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    footer {
+      margin-top: 34px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: #e2e8f0;
+      font-size: 0.85em;
+    }
+
+    @media (max-width: 780px) {
+      .steps, .tips {
+        grid-template-columns: 1fr;
+      }
+      .btn-primary-dl {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="italian-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <main class="container">
+    <header>
+      <div class="eyebrow">ASSETTO CORSA // SIM KAFE HAZIRLIK PAKETİ</div>
+      <h1>Monza GT3 — Ortak LAN Odası Kurulumu</h1>
+      <p class="subtitle">
+        Sadece Shuto yüklü ve orijinal araçları silinmiş sim kafe bilgisayarlarında 2 dakikada
+        Monza pisti + GT3 araçlarını kurup arkadaşınla aynı odada yarışmak için hazır sayfa.
+      </p>
+    </header>
+
+    <section class="steps" aria-label="Kurulum Adımları">
+      <div class="step-card">
+        <span class="step-num">ADIM 1 · İKİ BİLGİSAYAR</span>
+        <h2>Pisti &amp; Araçları Kurun</h2>
+        <p>
+          Aşağıdan seçtiğiniz GT3 araçlarını ve (silinmişse) Monza pistini indirin. İndirilen
+          <code>.zip</code> / <code>.rar</code> dosyalarını doğrudan <strong>Content Manager penceresinin içine sürükleyip bırakın</strong> ve sağ üstteki yeşil ikondan <strong>Install</strong> deyin.
+        </p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">ADIM 2 · SADECE 1. BİLGİSAYAR</span>
+        <h2>Sunucu Başlatıcıyı Açın</h2>
+        <p>
+          Aşağıdaki <strong>Monza_GT3_Sunucu_Baslat.bat</strong> dosyasını indirip çift tıklayın.
+          Assetto Corsa klasörünü, Monza'yı ve GT3 araçlarını otomatik bulup LAN odasını açar.
+        </p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">ADIM 3 · İKİ BİLGİSAYAR</span>
+        <h2>LAN Sekmesinden Katılın</h2>
+        <p>
+          Content Manager içinde <strong>Online &rarr; LAN</strong> sekmesine tıklayın.
+          Listede çıkan <strong>SIM KAFE MONZA GT3 LAN</strong> odasını seçip arabanızı belirleyin ve <strong>Join</strong> deyin.
+        </p>
+      </div>
+    </section>
+
+    <section class="launcher-box" aria-label="Otomatik Sunucu Başlatıcı">
+      <div class="launcher-info">
+        <h2>Otomatik Monza GT3 LAN Sunucu Başlatıcı</h2>
+        <p>
+          Ayar dosyalarını (<code>server_cfg.ini</code> ve <code>entry_list.ini</code>) sıfırdan kendisi yazar.
+          Her araçtan 4'er kopya slot açar, hasarı kapatır ve lastikleri sıcak başlatır.
+        </p>
+        <div class="launcher-note">
+          Windows SmartScreen uyarısı çıkarsa: <strong>Ek bilgi &rarr; Yine de çalıştır</strong> seçin. Sunucu penceresini yarış bitene kadar kapatmayın.
+        </div>
+      </div>
+      <a class="btn-primary-dl" href="Monza_GT3_Sunucu_Baslat.bat" download="Monza_GT3_Sunucu_Baslat.bat">
+        Monza_GT3_Sunucu_Baslat.bat İndir
+      </a>
+    </section>
+
+    <section aria-label="Monza Pisti">
+      <h2 class="section-title">1. Monza Pisti (Bilgisayardan Silinmişse)</h2>
+      <p class="section-desc">Önce Content Manager'da piste bakın; Monza listede yoksa ikisinden birini indirip iki bilgisayara da kurun.</p>
+      <div class="grid">
+        <article class="card">
+          <div>
+            <div class="card-tag">PİST // ÖNERİLEN</div>
+            <h3>Orijinal Monza Pisti (acm-monza.zip)</h3>
+            <p>Standart GP pisti. İki bilgisayarda da aynı sürümün olması yeterlidir.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-red" href="https://modsfire.com/c9P0Lifq8Z6u2" target="_blank" rel="noopener">Direkt İndir (ModsFire)</a>
+            <a class="btn btn-outline" href="https://www.assettoworld.com/track/monza" target="_blank" rel="noopener">Alternatif (AssettoWorld)</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div>
+            <div class="card-tag">PİST // ALTERNATİF</div>
+            <h3>Monza GP 2017</h3>
+            <p>Orijinal link yavaşsa veya açılmazsa alternatif Monza GP sürümü.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-outline" href="https://www.assettoworld.com/track/monza_gp_2017" target="_blank" rel="noopener">İndirme Sayfası (AssettoWorld)</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section aria-label="GT3 Araçları">
+      <h2 class="section-title">2. GT3 Araçları (İki Bilgisayara da Aynılarını Kurun)</h2>
+      <p class="section-desc">Hepsini kurmak zorunda değilsiniz; sürmek istediğiniz 2–3 aracı seçip ikiniz de aynı dosyaları indirip Content Manager'a sürükleyin.</p>
+      <div class="grid">
+        <article class="card">
+          <div>
+            <div class="card-tag">GT3 // PORSCHE</div>
+            <h3>Porsche 911 (992) GT3 R</h3>
+            <p>Güncel 992 kasa GT3 yarış aracı. Hızlı kurulum için direkt ModsFire linki mevcut.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-red" href="https://modsfire.com/OfwK0PcwV529Y8V" target="_blank" rel="noopener">Direkt İndir (ModsFire)</a>
+            <a class="btn btn-outline" href="https://www.assettoworld.com/car/porsche-992-gt3-r" target="_blank" rel="noopener">Alternatif (AssettoWorld)</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div>
+            <div class="card-tag">GT3 // BMW</div>
+            <h3>BMW M4 GT3 EVO</h3>
+            <p>Monza düzlüklerinde ve şikanlarda dengeli modern BMW GT3 modeli.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-red" href="https://www.assettoworld.com/car/bmw-m4-gt3-evo" target="_blank" rel="noopener">İndirme Sayfası</a>
+            <a class="btn btn-outline" href="https://www.assettoworld.com/car/bmw-m4-gt3-5" target="_blank" rel="noopener">Alternatif (M4 GT3)</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div>
+            <div class="card-tag">GT3 // FERRARI</div>
+            <h3>Ferrari 296 GT3</h3>
+            <p>Monza'nın ev sahibi Ferrari'nin güncel V6 çift turbo GT3 yarış otomobili.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-red" href="https://www.assettoworld.com/car/ferrari-296-gt3-1" target="_blank" rel="noopener">İndirme Sayfası</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div>
+            <div class="card-tag">GT3 // FERRARI ACC</div>
+            <h3>Ferrari 488 GT3 EVO (ACC)</h3>
+            <p>Competizione fiziği ve sesleriyle uyarlanmış klasik V8 Ferrari GT3.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-red" href="https://www.assettoworld.com/car/ferrari-488-gt3-acc" target="_blank" rel="noopener">İndirme Sayfası</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div>
+            <div class="card-tag">GT3 // MERCEDES-AMG</div>
+            <h3>Mercedes-AMG GT3 EVO 2020</h3>
+            <p>Güçlü V8 sesi ve stabil yol tutuşuyla Monza için en popüler GT3 seçeneklerinden.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-red" href="https://www.assettoworld.com/car/mercedes-benz-amg-gt3-evo-2020" target="_blank" rel="noopener">İndirme Sayfası</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <div>
+            <div class="card-tag">KOLEKSİYON</div>
+            <h3>Tüm GT3 Araçları Listesi</h3>
+            <p>Lamborghini, Audi R8, McLaren veya Aston Martin GT3 arıyorsanız en çok indirilenler listesi.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-outline" href="https://www.assettoworld.com/cars/search?q=gt3&sort=downloads" target="_blank" rel="noopener">Tüm GT3 Modlarını Aç</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="tips" aria-label="Yedek Plan ve İpuçları">
+      <div class="tip-box">
+        <h3>İpucu 1: Hiç Araç İndirmeden Hemen Oynamak</h3>
+        <p>
+          Araç indirmekle uğraşmak istemezseniz sadece <strong>Monza pistini</strong> kurun.
+          Sunucu Başlatıcı programını açınca menüden <strong>[2]</strong> seçeneğini seçin;
+          bilgisayardaki mevcut Shuto araçlarıyla bile anında Monza'da yarışabilirsiniz.
+        </p>
+      </div>
+      <div class="tip-box">
+        <h3>İpucu 2: Steam Dosya Doğrulama ile Orijinal GT3'ler</h3>
+        <p>
+          Sim kafede Steam açıksa ve internet hızlıysa: <strong>Steam &rarr; Assetto Corsa &rarr; Özellikler &rarr; Yüklü Dosyalar &rarr; "Oyun dosyalarının bütünlüğünü doğrula"</strong>
+          diyerek silinmiş tüm orijinal GT3 araçlarını ve Monza pistini geri getirebilirsiniz.
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      <span>Monza GT3 Sim Kafe Paketi — Tek Tık LAN Sunucu</span>
+      <span>LAN'da oda görünmezse Content Manager &rarr; Online &rarr; Add IP kısmına siyah ekrandaki <code>IP:8081</code> adresini girin.</span>
+    </footer>
+  </main>
+</body>
+</html>

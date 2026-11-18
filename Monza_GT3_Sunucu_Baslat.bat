@@ -364,16 +364,18 @@ function Ensure-FirewallRules {
 
 function Get-CarCatalog {
     param([string]$CarsRoot)
-    $gt3Cars = New-Object System.Collections.Generic.List[hashtable]
+    $noDlcCars = New-Object System.Collections.Generic.List[hashtable]
     $allCars = New-Object System.Collections.Generic.List[hashtable]
 
     $dirs = Get-ChildItem -Path $CarsRoot -Directory -ErrorAction SilentlyContinue | Sort-Object Name
     foreach ($d in $dirs) {
         $carId = $d.Name
         $carName = $carId
-        $isGt3 = $false
+        $exclude = $false
 
-        if ($carId -imatch "gt3") { $isGt3 = $true }
+        if ($carId -imatch "^ks_") { $exclude = $true }
+        if ($carId -imatch "^traffic_") { $exclude = $true }
+        if ($carId -imatch "992|gt3") { $exclude = $true }
 
         $uiCar = Join-Path $d.FullName "ui\ui_car.json"
         if (Test-Path $uiCar) {
@@ -382,8 +384,8 @@ function Get-CarCatalog {
                 if ($raw -imatch '"name"\s*:\s*"([^"]+)"') {
                     $carName = $matches[1]
                 }
-                if ($raw -imatch "gt3") {
-                    $isGt3 = $true
+                if ($carName -imatch "992|gt3" -or $raw -imatch '"parent"\s*:\s*"ks_') {
+                    $exclude = $true
                 }
             } catch {}
         }
@@ -401,12 +403,12 @@ function Get-CarCatalog {
             Skin = $skinName
         }
         $allCars.Add($item)
-        if ($isGt3) { $gt3Cars.Add($item) }
+        if (-not $exclude) { $noDlcCars.Add($item) }
     }
 
     return @{
-        Gt3 = $gt3Cars
-        All = $allCars
+        NoDlc = $noDlcCars
+        All   = $allCars
     }
 }
 
@@ -530,8 +532,8 @@ $layoutDisplay = if ([string]::IsNullOrWhiteSpace($monza.Layout)) { "(Varsayilan
 Write-Host "[OK] Monza pisti hazir: $($monza.TrackId) $layoutDisplay" -ForegroundColor Green
 Write-Host ""
 
-# 3. Arac tarama ve secim menusu
-Write-Host "[3/5] Yuklu araclar taraniyor..." -ForegroundColor Cyan
+# 3. DLC'siz 2 arac otomatik secimi (soru sormadan)
+Write-Host "[3/5] DLC'siz araclar seciliyor (992/GT3/ks_ haric)..." -ForegroundColor Cyan
 $carsRoot = Join-Path $acDir "content\cars"
 $catalog = Get-CarCatalog -CarsRoot $carsRoot
 
@@ -540,90 +542,30 @@ if ($catalog.All.Count -eq 0) {
     exit 1
 }
 
-Write-Host "  - Bulunan GT3 araci sayisi : $($catalog.Gt3.Count)" -ForegroundColor Yellow
-Write-Host "  - Toplam yuklu arac sayisi : $($catalog.All.Count)" -ForegroundColor Gray
-Write-Host ""
+$pool = if ($catalog.NoDlc.Count -gt 0) { $catalog.NoDlc } else { $catalog.All }
+$selectedCars = @($pool | Select-Object -First 2)
 
-$selectedCars = $null
-
-if ($catalog.Gt3.Count -gt 0) {
-    Write-Host "Bulunan GT3 araclari:" -ForegroundColor White
-    $previewCount = [Math]::Min($catalog.Gt3.Count, 12)
-    for ($k = 0; $k -lt $previewCount; $k++) {
-        Write-Host "    * $($catalog.Gt3[$k].Name) [$($catalog.Gt3[$k].Id)]" -ForegroundColor Green
-    }
-    if ($catalog.Gt3.Count -gt 12) {
-        Write-Host "    ... ve $($catalog.Gt3.Count - 12) arac daha." -ForegroundColor Green
-    }
-    Write-Host ""
-    Write-Host "Arac Modunu Secin:" -ForegroundColor Cyan
-    Write-Host "  [1] Yuklu GT3 Araclariyla Monza Odasi Ac (Onerilen)" -ForegroundColor White
-    Write-Host "  [2] Bilgisayardaki Mevcut Araclarla (Shuto araclari dahil) Monza Odasi Ac" -ForegroundColor White
-    Write-Host ""
-    $choice = Read-Host "Seciminiz [1/2] (Varsayilan 1)"
-    if ($choice -eq "2") {
-        $selectedCars = $catalog.All
-        Write-Host "[SECILDI] Tum mevcut araclarla oda kuruluyor..." -ForegroundColor Yellow
-    } else {
-        $selectedCars = $catalog.Gt3
-        Write-Host "[SECILDI] GT3 araclariyla oda kuruluyor..." -ForegroundColor Green
-    }
-} else {
-    Write-Host "[UYARI] Bilgisayarda henuz GT3 araci bulunamadi!" -ForegroundColor Yellow
-    Write-Host "GT3 oynamak istiyorsan web sayfasindaki GT3 araclarini indirip" -ForegroundColor Gray
-    Write-Host "Content Manager'a surukle ve Install'a bas." -ForegroundColor Gray
-    Write-Host ""
-    Write-Host "  [1] GT3 Araclarini Kurdum, Tekrar Tara" -ForegroundColor White
-    Write-Host "  [2] Bilgisayardaki Mevcut Araclarla (Shuto araclari dahil) Monza Odasi Ac" -ForegroundColor White
-    Write-Host ""
-    while ($true) {
-        $choice = Read-Host "Seciminiz [1/2]"
-        if ($choice -eq "2") {
-            $selectedCars = $catalog.All
-            break
-        } else {
-            $catalog = Get-CarCatalog -CarsRoot $carsRoot
-            if ($catalog.Gt3.Count -gt 0) {
-                $selectedCars = $catalog.Gt3
-                Write-Host "[OK] $($catalog.Gt3.Count) adet GT3 araci bulundu!" -ForegroundColor Green
-                break
-            }
-            Write-Host "[BILGI] Hala GT3 araci gorunmuyor. Araclari kurup tekrar [1]'e veya Shuto araclari icin [2]'ye basin." -ForegroundColor Yellow
-        }
-    }
+Write-Host "[OK] Secilen 2 arac (DLC'siz):" -ForegroundColor Green
+foreach ($sc in $selectedCars) {
+    Write-Host "    * $($sc.Name) [$($sc.Id)]" -ForegroundColor White
 }
 
-# 4. Seans / Oyun Modu Secimi
+# 4. Hemen Yaris Modu (soru sormadan otomatik)
 Write-Host ""
-Write-Host "[4/5] Seans / Oyun Modunu Secin:" -ForegroundColor Cyan
-Write-Host "  [1] Hemen Yaris Modu (3 dk Kisa Siralama + 10 Tur Yaris - Tekrarli) [Onerilen]" -ForegroundColor White
-Write-Host "  [2] Serbest Gazlama / Trackday Modu (120 dk Acik Antrenman)" -ForegroundColor White
-Write-Host ""
-$modeChoice = Read-Host "Seciminiz [1/2] (Varsayilan 1)"
-
-if ($modeChoice -eq "2") {
-    $sessionBlock = @"
-[PRACTICE]
-NAME=Trackday Serbest Surus
-TIME=120
-IS_OPEN=1
-"@
-    $modeLabel = "Serbest Gazlama / Trackday (120 dk)"
-} else {
-    $sessionBlock = @"
+Write-Host "[4/5] Hemen Yaris Modu otomatik ayarlandi." -ForegroundColor Cyan
+$sessionBlock = @"
 [QUALIFY]
 NAME=Kisa Siralama
 TIME=3
 IS_OPEN=1
 
 [RACE]
-NAME=Monza GT3 Yaris
+NAME=Monza Yaris
 LAPS=10
 WAIT_TIME=20
 IS_OPEN=2
 "@
-    $modeLabel = "Hemen Yaris Modu (3 dk Siralama + 10 Tur Yaris)"
-}
+$modeLabel = "Hemen Yaris Modu (3 dk Siralama + 10 Tur Yaris)"
 
 # 5. surfaces.ini korumasi, checksum temizligi, firewall ve config yazimi
 Write-Host ""
